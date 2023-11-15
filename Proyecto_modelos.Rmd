@@ -1,0 +1,146 @@
+---
+title: "Proyecto_Modelos"
+author: "cecilio sanchez"
+date: "2023-11-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(markovchain)
+```
+
+
+```{r}
+# Se definen los nombres de los estados
+
+statesNames= c("E","A","S")
+# Se crea el objeto markovchain
+PM1 <- new("markovchain",states = statesNames, transitionMatrix = matrix(c(0,.2,.8,.4,0,.6,1,0,0), nrow = 3, byrow = TRUE, dimnames = list(statesNames,statesNames)))
+```
+
+-- Matriz de transición de estados:
+
+```{r}
+# Se imprime la cadena de Markovw
+
+print(PM1)
+```
+
+-- Diagrama de transición de estados:
+```{r}
+# Se genera el diagrama de transición de estados
+plot(PM1)
+```
+
+-- Resumen de clases de la cadena de Markov:
+
+```{r}
+# Se muestra el resumen de la cadena de Markov
+summary(PM1)
+```
+
+
+**¿Cómo puedo calcular la probabilidad de transición de pasar del estado "Espera" al estado "Atendido" utilizando la matriz de transición?**
+
+```{r}
+# Pregunta 1: Cálculo de la probabilidad de transición de "Espera" a "Atendido"
+prob_espera_a_atendido <- transitionProbability(PM1, "E", "A")
+
+# Imprimir la probabilidad
+cat("La probabilidad de transición de 'Espera' a 'Atendido' es:", prob_espera_a_atendido, "\n")
+
+# Pregunta 2: Interpretación práctica de la probabilidad de transición
+cat("La interpretación práctica de esta probabilidad es que, dado que un cliente se encuentra en 'Espera',\n",
+    "existe una probabilidad del", prob_espera_a_atendido, "de ser atendido durante el próximo ciclo del proceso.\n",
+    "Esta probabilidad influye en la eficiencia del servicio y en el tiempo de espera percibido por los clientes.\n")
+
+```
+
+**¿Podrías proporcionar la probabilidad de transición de "Espera" a "Servido" y de "Atendido" a "Espera" utilizando la matriz de transición?**
+
+```{r}
+# Cálculo de la probabilidad de transición de "Espera" a "Servido"
+prob_espera_a_servido <- transitionProbability(PM1, "E", "S")
+
+# Cálculo de la probabilidad de transición de "Atendido" a "Espera"
+prob_atendido_a_espera <- transitionProbability(PM1, "A", "E")
+
+# Imprimir las probabilidades
+cat("La probabilidad de transición de 'Espera' a 'Servido' es:", prob_espera_a_servido, "\n")
+cat("La probabilidad de transición de 'Atendido' a 'Espera' es:", prob_atendido_a_espera, "\n")
+
+```
+
+**Si la probabilidad de transición de "Espera" a "Atendido" fuera más alta, ¿cómo afectaría el flujo del proceso?**
+
+```{r}
+# Supongamos que incrementamos la probabilidad de transición de "Espera" a "Atendido" al 0.4
+PM1@transitionMatrix["E", "A"] <- 0.4
+
+# Cálculo de la probabilidad de transición de "Espera" a "Atendido" después del ajuste
+prob_espera_a_atendido_ajustada <- transitionProbability(PM1, "E", "A")
+
+# Imprimir la probabilidad ajustada
+cat("La probabilidad de transición de 'Espera' a 'Atendido' ajustada es:", prob_espera_a_atendido_ajustada, "\n")
+
+# Observar cómo afectaría el flujo del proceso con la probabilidad ajustada
+# Puedes realizar simulaciones o análisis adicionales según tus necesidades específicas.
+
+```
+**Con una probabilidad más alta de pasar de "Espera" a "Atendido", los clientes experimentarían tiempos de espera más cortos antes de recibir atención. Esto podría mejorar la satisfacción del cliente al reducir la percepción de tiempos de espera prolongados.**
+
+
+
+
+**¿Cuál es la probabilidad de que un cliente permanezca en el estado "Atendido" durante más de un ciclo?**
+
+```{r}
+# Definir la cantidad de ciclos adicionales
+num_ciclos_adicionales <- 0  # Puedes ajustar según sea necesario
+
+# Calcular la probabilidad acumulativa de permanecer en "Atendido" durante más de un ciclo
+prob_atendido_mas_de_un_ciclo <- sum(PM1@transitionMatrix["A", "A"]^num_ciclos_adicionales)
+
+# Imprimir la probabilidad
+cat("La probabilidad de que un cliente permanezca en 'Atendido' durante más de un ciclo es:", prob_atendido_mas_de_un_ciclo, "\n")
+
+```
+
+
+**calcular la probabilidad de que un cliente permanezca en el estado "Espera" y luego pase al estado "Atendido" durante más de un ciclo**
+
+```{r}
+# Definir la cantidad de ciclos adicionales
+num_ciclos_adicionales <- 3  # Puedes ajustar según sea necesario
+
+# Calcular la probabilidad acumulativa de permanecer en "Espera" durante más de un ciclo
+prob_espera_mas_de_un_ciclo <- sum(PM1@transitionMatrix["A", "E"]^num_ciclos_adicionales)
+
+# Imprimir la probabilidad
+cat("La probabilidad de que un cliente permanezca en 'Espera' durante más de un ciclo es:", prob_espera_mas_de_un_ciclo, "\n")
+
+
+```
+
+
+
+
+```{r}
+PM2 <- matrix(c(0,.2,.8,.4,0,.6,1,0,0), nrow = 3, byrow = TRUE,
+            dimnames = list(c("E", "A", "S"), c("E", "A", "S")))
+```
+
+
+**probabilidad acumulativa de pasar de "E" a "A" en tres ciclos**
+```{r}
+prob_ii <- PM2 %*% PM2 %*% PM2
+prob_ii <- prob_ii[1,2]
+prob_ii
+```
+
+
